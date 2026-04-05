@@ -15,10 +15,21 @@
 		5C3151F170D2400430930265 /* CategoryBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED347F7DEE46D7C2AA154A48 /* CategoryBadge.swift */; };
 		676CA3CC67A910389DB981BD /* TaskEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22AB08313E9AFA4DD3EB0DB /* TaskEditorView.swift */; };
 		700FAD0D0456CAB39A3D00EB /* DailyPlannerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB0D37C121C7C44901A8ABD9 /* DailyPlannerApp.swift */; };
+		7BF5E485E8BD4375B0CA9927 /* CalendarEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B087440C21D42A080B672DF /* CalendarEvent.swift */; };
 		7FF98D00C76D3DA8C0A77B0A /* TimelineRulerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A26A2B1A989EF4B1987EB332 /* TimelineRulerView.swift */; };
 		812B08B159EA86EB27992F7E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51C3556FBA1034B2F3ACE0B8 /* ContentView.swift */; };
 		8960FA4190213004300222EF /* PlannerTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB4FD24BC5DE117BA52BDA60 /* PlannerTask.swift */; };
 		8B71D389F1E2A7A04157AF65 /* TaskBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7B089D5A507773027EE7E4 /* TaskBlockView.swift */; };
+		93A79E042F814CF800E8226F /* CalendarViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A79E002F814CF800E8226F /* CalendarViews.swift */; };
+		93A79E052F814CF800E8226F /* NotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A79E012F814CF800E8226F /* NotesView.swift */; };
+		93A79E062F814CF800E8226F /* RemindersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A79E022F814CF800E8226F /* RemindersView.swift */; };
+		93A79E072F814CF800E8226F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A79E032F814CF800E8226F /* SettingsView.swift */; };
+		93A79E0A2F814D4900E8226F /* NoteLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A79E082F814D4900E8226F /* NoteLabel.swift */; };
+		93A79E0B2F814D4900E8226F /* PlannerNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A79E092F814D4900E8226F /* PlannerNote.swift */; };
+		93A79E0F2F814E7100E8226F /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A79E0E2F814E7100E8226F /* Color+Hex.swift */; };
+		93A79E102F814E7100E8226F /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93A79E0D2F814E7100E8226F /* AppTheme.swift */; };
+		A601A2C8472847EB9ABCDDEF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6D68F559095F4F2D9699F1CB /* Assets.xcassets */; };
+		ABBAAF4C1544471EAA97E506 /* CalendarEventEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEED2F7D3D3E47E29D738543 /* CalendarEventEditorView.swift */; };
 		BDBB9F004664921114F2927E /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41DA1F1EA2EEA61612C29D83 /* NotificationManager.swift */; };
 		E2D670F60030AB9E94FA4D73 /* RecurrenceRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F3F7A3A867E2471C34913CC /* RecurrenceRule.swift */; };
 		E628A42E8994BCC4A7A205AC /* InboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F1200CEC0FA4355F487D29 /* InboxView.swift */; };
@@ -26,18 +37,29 @@
 
 /* Begin PBXFileReference section */
 		2591D86A310784E26AACECD3 /* TaskCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCategory.swift; sourceTree = "<group>"; };
+		2B087440C21D42A080B672DF /* CalendarEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEvent.swift; sourceTree = "<group>"; };
 		390899C8C146EBA300B1DA2A /* PlannerWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannerWidget.swift; sourceTree = "<group>"; };
 		39D819B6D18B1C5F1005C2E6 /* WatchContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchContentView.swift; sourceTree = "<group>"; };
 		3BFC00E2C4F7BA7E9735872D /* CurrentTimeBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentTimeBar.swift; sourceTree = "<group>"; };
 		41DA1F1EA2EEA61612C29D83 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		51C3556FBA1034B2F3ACE0B8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		64063611AA321549FBCAED65 /* ARCHITECTURE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ARCHITECTURE.md; sourceTree = "<group>"; };
-		7904A3644372B0F6BF3C5204 /* DailyPlanner.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DailyPlanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D68F559095F4F2D9699F1CB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7904A3644372B0F6BF3C5204 /* Plotted Daily Planner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Plotted Daily Planner.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		81DC267CABBD186131684D28 /* RecurrencePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrencePickerView.swift; sourceTree = "<group>"; };
+		93A79E002F814CF800E8226F /* CalendarViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViews.swift; sourceTree = "<group>"; };
+		93A79E012F814CF800E8226F /* NotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesView.swift; sourceTree = "<group>"; };
+		93A79E022F814CF800E8226F /* RemindersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersView.swift; sourceTree = "<group>"; };
+		93A79E032F814CF800E8226F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		93A79E082F814D4900E8226F /* NoteLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteLabel.swift; sourceTree = "<group>"; };
+		93A79E092F814D4900E8226F /* PlannerNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannerNote.swift; sourceTree = "<group>"; };
+		93A79E0D2F814E7100E8226F /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		93A79E0E2F814E7100E8226F /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		9F3F7A3A867E2471C34913CC /* RecurrenceRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceRule.swift; sourceTree = "<group>"; };
 		A26A2B1A989EF4B1987EB332 /* TimelineRulerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineRulerView.swift; sourceTree = "<group>"; };
 		AAB4EE3504CA86F87F3711B5 /* DayTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayTimelineView.swift; sourceTree = "<group>"; };
 		AE7B089D5A507773027EE7E4 /* TaskBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskBlockView.swift; sourceTree = "<group>"; };
+		AEED2F7D3D3E47E29D738543 /* CalendarEventEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventEditorView.swift; sourceTree = "<group>"; };
 		D03E506C748D628237DE8D74 /* PlannerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannerViewModel.swift; sourceTree = "<group>"; };
 		D22AB08313E9AFA4DD3EB0DB /* TaskEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskEditorView.swift; sourceTree = "<group>"; };
 		DB4FD24BC5DE117BA52BDA60 /* PlannerTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannerTask.swift; sourceTree = "<group>"; };
@@ -70,6 +92,9 @@
 		300ECB6EF10104A45DC9E995 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				2B087440C21D42A080B672DF /* CalendarEvent.swift */,
+				93A79E082F814D4900E8226F /* NoteLabel.swift */,
+				93A79E092F814D4900E8226F /* PlannerNote.swift */,
 				DB4FD24BC5DE117BA52BDA60 /* PlannerTask.swift */,
 				9F3F7A3A867E2471C34913CC /* RecurrenceRule.swift */,
 				2591D86A310784E26AACECD3 /* TaskCategory.swift */,
@@ -80,6 +105,11 @@
 		35D8E5BAD6C775E3D82074FF /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				93A79E002F814CF800E8226F /* CalendarViews.swift */,
+				AEED2F7D3D3E47E29D738543 /* CalendarEventEditorView.swift */,
+				93A79E012F814CF800E8226F /* NotesView.swift */,
+				93A79E022F814CF800E8226F /* RemindersView.swift */,
+				93A79E032F814CF800E8226F /* SettingsView.swift */,
 				51C3556FBA1034B2F3ACE0B8 /* ContentView.swift */,
 				41F8DC2CD40482E971C9E26F /* Inbox */,
 				DC514945F4EB0D8321DFEAD8 /* Shared */,
@@ -124,7 +154,7 @@
 		75594106285314912D9CFE0D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7904A3644372B0F6BF3C5204 /* DailyPlanner.app */,
+				7904A3644372B0F6BF3C5204 /* Plotted Daily Planner.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -140,6 +170,7 @@
 		BF266A9EF6715E43D2C60657 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				6D68F559095F4F2D9699F1CB /* Assets.xcassets */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -163,6 +194,8 @@
 		DD0D203A77B36EFD9463D08F /* DailyPlanner */ = {
 			isa = PBXGroup;
 			children = (
+				93A79E0D2F814E7100E8226F /* AppTheme.swift */,
+				93A79E0E2F814E7100E8226F /* Color+Hex.swift */,
 				64063611AA321549FBCAED65 /* ARCHITECTURE.md */,
 				58A3218E1559A2D6C6E0A40F /* App */,
 				B9906981B9482F4D3FCB20A1 /* Managers */,
@@ -191,6 +224,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = EB26B37F1C3230423AD076C6 /* Build configuration list for PBXNativeTarget "DailyPlanner" */;
 			buildPhases = (
+				E6419DD3A07140398752C602 /* Resources */,
 				499168A9F37B6342991DE839 /* Sources */,
 			);
 			buildRules = (
@@ -201,7 +235,7 @@
 			packageProductDependencies = (
 			);
 			productName = DailyPlanner;
-			productReference = 7904A3644372B0F6BF3C5204 /* DailyPlanner.app */;
+			productReference = 7904A3644372B0F6BF3C5204 /* Plotted Daily Planner.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -211,9 +245,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1600;
-				TargetAttributes = {
-				};
+				LastUpgradeCheck = 2640;
 			};
 			buildConfigurationList = 9AA1D99EBBB00ECEB40474E1 /* Build configuration list for PBXProject "DailyPlanner" */;
 			developmentRegion = en;
@@ -234,6 +266,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		E6419DD3A07140398752C602 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A601A2C8472847EB9ABCDDEF /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		499168A9F37B6342991DE839 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -249,11 +292,21 @@
 				8960FA4190213004300222EF /* PlannerTask.swift in Sources */,
 				58705BFA3F2144F47D05923A /* PlannerViewModel.swift in Sources */,
 				4ED41C230AFB7DC2672B3EC4 /* RecurrencePickerView.swift in Sources */,
+				93A79E0A2F814D4900E8226F /* NoteLabel.swift in Sources */,
+				93A79E0B2F814D4900E8226F /* PlannerNote.swift in Sources */,
 				E2D670F60030AB9E94FA4D73 /* RecurrenceRule.swift in Sources */,
 				8B71D389F1E2A7A04157AF65 /* TaskBlockView.swift in Sources */,
+				93A79E0F2F814E7100E8226F /* Color+Hex.swift in Sources */,
+				93A79E102F814E7100E8226F /* AppTheme.swift in Sources */,
 				4EEE865DD1BD2F98B6D85C52 /* TaskCategory.swift in Sources */,
 				676CA3CC67A910389DB981BD /* TaskEditorView.swift in Sources */,
 				7FF98D00C76D3DA8C0A77B0A /* TimelineRulerView.swift in Sources */,
+				93A79E042F814CF800E8226F /* CalendarViews.swift in Sources */,
+				7BF5E485E8BD4375B0CA9927 /* CalendarEvent.swift in Sources */,
+				ABBAAF4C1544471EAA97E506 /* CalendarEventEditorView.swift in Sources */,
+				93A79E052F814CF800E8226F /* NotesView.swift in Sources */,
+				93A79E062F814CF800E8226F /* RemindersView.swift in Sources */,
+				93A79E072F814CF800E8226F /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,14 +318,18 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = NP2HZJK3WT;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DailyPlanner/Support/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Plotted Daily Planner";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.owenphipps.DailyPlanner;
-				PRODUCT_NAME = DailyPlanner;
+				PRODUCT_NAME = "Plotted Daily Planner";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -286,6 +343,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -317,9 +375,11 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -342,6 +402,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -352,6 +413,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -383,9 +445,11 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -401,6 +465,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -412,14 +477,18 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = NP2HZJK3WT;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = DailyPlanner/Support/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Plotted Daily Planner";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.owenphipps.DailyPlanner;
-				PRODUCT_NAME = DailyPlanner;
+				PRODUCT_NAME = "Plotted Daily Planner";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;

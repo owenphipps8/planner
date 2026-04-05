@@ -37,26 +37,36 @@ private struct HourRow: View {
     let rulerWidth: CGFloat
     let totalWidth: CGFloat
 
+    private var safeTotalWidth: CGFloat { totalWidth.isFinite ? max(totalWidth, 0) : 0 }
+    private var safeGridWidth: CGFloat {
+        let raw = safeTotalWidth - rulerWidth
+        return raw.isFinite ? max(raw, 0) : 0
+    }
+    private var safeLabelWidth: CGFloat {
+        let raw = rulerWidth - 8
+        return raw.isFinite ? max(raw, 0) : 0
+    }
+
     var body: some View {
         ZStack(alignment: .topLeading) {
 
             // Horizontal grid line spanning the full width
             Rectangle()
-                .fill(Color(.separator).opacity(0.3))
-                .frame(width: totalWidth, height: 0.5)
+                .fill(Color.gray.opacity(0.3))
+                .frame(width: safeTotalWidth, height: 0.5)
                 .offset(y: 0)
 
             // Half-hour divider line (lighter, shorter)
             Rectangle()
-                .fill(Color(.separator).opacity(0.15))
-                .frame(width: totalWidth - rulerWidth, height: 0.5)
+                .fill(Color.gray.opacity(0.15))
+                .frame(width: safeGridWidth, height: 0.5)
                 .offset(x: rulerWidth, y: hourHeight / 2)
 
             // Hour label on the left
             Text(hourLabel(for: hour))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
-                .frame(width: rulerWidth - 8, alignment: .trailing)
+                .frame(width: safeLabelWidth, alignment: .trailing)
                 .offset(y: -8) // nudge up so the label aligns with the line
         }
         .frame(height: hourHeight)

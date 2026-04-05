@@ -18,6 +18,15 @@ struct CurrentTimeBar: View {
 
     @State private var currentOffset: CGFloat
 
+    private var safeLineWidth: CGFloat {
+        let raw = totalWidth - rulerWidth
+        return raw.isFinite ? max(raw, 0) : 0
+    }
+
+    private var safeRulerOffset: CGFloat {
+        rulerWidth.isFinite ? max(rulerWidth, 0) : 0
+    }
+
     init(rulerWidth: CGFloat, totalWidth: CGFloat, yOffset: CGFloat) {
         self.rulerWidth = rulerWidth
         self.totalWidth = totalWidth
@@ -30,14 +39,14 @@ struct CurrentTimeBar: View {
             // The horizontal line
             Rectangle()
                 .fill(Color.red)
-                .frame(width: totalWidth - rulerWidth, height: 1.5)
-                .offset(x: rulerWidth)
+                .frame(width: safeLineWidth, height: 1.5)
+                .offset(x: safeRulerOffset)
 
             // The dot on the left end of the line
             Circle()
                 .fill(Color.red)
                 .frame(width: 9, height: 9)
-                .offset(x: rulerWidth - 4)
+                .offset(x: max(safeRulerOffset - 4, 0))
         }
         .offset(y: currentOffset)
         .onReceive(timer) { _ in

@@ -22,6 +22,9 @@ struct DailyPlannerApp: App {
         let schema = Schema([
             PlannerTask.self,
             TaskCategory.self,
+            CalendarEvent.self,
+            PlannerNote.self,
+            NoteLabel.self,
         ])
 
         let modelConfiguration = ModelConfiguration(

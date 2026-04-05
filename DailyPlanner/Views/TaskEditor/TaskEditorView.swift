@@ -36,20 +36,28 @@ struct TaskEditorView: View {
 
     /// When non-nil, we are editing this existing task
     private let existingTask: PlannerTask?
+    private let onSave: (() -> Void)?
+    /// When false the view omits its own NavigationStack so it can be
+    /// pushed onto a parent NavigationStack (e.g. from CalendarDayTasksSheet).
+    private let embedInNavigationStack: Bool
 
     // MARK: - Initializers
 
     /// Create mode: start with a pre-set time.
     /// Pass `isInbox: true` to create a task that starts in the Inbox (no scheduled slot).
-    init(startTime: Date, isInbox: Bool = false) {
+    init(startTime: Date, isInbox: Bool = false, onSave: (() -> Void)? = nil, embedInNavigationStack: Bool = true) {
         self.existingTask = nil
+        self.onSave = onSave
+        self.embedInNavigationStack = embedInNavigationStack
         _startTime = State(initialValue: startTime)
         _isInbox = State(initialValue: isInbox)
     }
 
     /// Edit mode: populate fields from the existing task
-    init(existingTask: PlannerTask) {
+    init(existingTask: PlannerTask, onSave: (() -> Void)? = nil, embedInNavigationStack: Bool = true) {
         self.existingTask = existingTask
+        self.onSave = onSave
+        self.embedInNavigationStack = embedInNavigationStack
         _title = State(initialValue: existingTask.title)
         _startTime = State(initialValue: existingTask.startTime)
         _durationMinutes = State(initialValue: existingTask.durationMinutes)
@@ -70,120 +78,122 @@ struct TaskEditorView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
-            Form {
+        if embedInNavigationStack {
+            NavigationStack { formContent }
+        } else {
+            formContent
+        }
+    }
 
-                // MARK: Title + Icon
-                Section {
+    private var formContent: some View {
+        Form {
+
+            // MARK: Title + Icon
+            Section {
+                HStack {
+                    Button {
+                        // Symbol picker is shown as a popover (see extension below)
+                    } label: {
+                        ZStack {
+                            Circle()
+                                .fill(Color(hex: selectedColor).opacity(0.15))
+                                .frame(width: 44, height: 44)
+                            Image(systemName: selectedSymbol)
+                                .foregroundStyle(Color(hex: selectedColor))
+                                .font(.title3)
+                        }
+                    }
+
+                    TextField("Task name", text: $title)
+                        .font(.title3)
+                        .fontWeight(.medium)
+                }
+                .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+            }
+
+            // MARK: Time & Duration  (hidden for inbox tasks)
+            if !isInbox {
+                Section("Time") {
+                    DatePicker("Start", selection: $startTime, displayedComponents: [.date, .hourAndMinute])
+
+                    DurationPickerRow(durationMinutes: $durationMinutes)
+
                     HStack {
-                        // Icon picker button
-                        Button {
-                            // Symbol picker is shown as a popover (see extension below)
-                        } label: {
-                            ZStack {
-                                Circle()
-                                    .fill(Color(hex: selectedColor).opacity(0.15))
-                                    .frame(width: 44, height: 44)
-                                Image(systemName: selectedSymbol)
-                                    .foregroundStyle(Color(hex: selectedColor))
-                                    .font(.title3)
-                            }
-                        }
-
-                        TextField("Task name", text: $title)
-                            .font(.title3)
-                            .fontWeight(.medium)
-                    }
-                    .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
-                }
-
-                // MARK: Time & Duration  (hidden for inbox tasks)
-                if !isInbox {
-                    Section("Time") {
-                        DatePicker("Start", selection: $startTime, displayedComponents: [.date, .hourAndMinute])
-
-                        DurationPickerRow(durationMinutes: $durationMinutes)
-
-                        // Show computed end time
-                        HStack {
-                            Text("Ends at")
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Text(endTime, style: .time)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-
-                // MARK: Inbox / Schedule Toggle
-                Section {
-                    Toggle(isOn: $isInbox) {
-                        Label(
-                            isInbox ? "In Inbox (unscheduled)" : "Scheduled on Timeline",
-                            systemImage: isInbox ? "tray.full" : "calendar.day.timeline.left"
-                        )
-                    }
-                    .tint(.accentColor)
-                }
-
-                // MARK: Recurrence
-                if !isInbox {
-                    Section("Repeat") {
-                        RecurrencePickerRow(recurrenceRule: $recurrenceRule)
-                    }
-                }
-
-                // MARK: Category & Color
-                Section("Appearance") {
-                    // Category picker
-                    Picker("Category", selection: $selectedCategory) {
-                        Text("None").tag(Optional<TaskCategory>.none)
-                        ForEach(categories) { category in
-                            Label(category.name, systemImage: category.symbolName)
-                                .tag(Optional(category))
-                        }
-                    }
-
-                    // Color swatches
-                    ColorSwatchRow(selectedColor: $selectedColor)
-                }
-
-                // MARK: Notifications  (not relevant for inbox tasks)
-                if !isInbox {
-                    Section("Notifications") {
-                        Toggle("Remind me at start", isOn: $notificationsEnabled)
-                    }
-                }
-
-                // MARK: Notes
-                Section("Notes") {
-                    TextEditor(text: $notes)
-                        .frame(minHeight: 80)
-                }
-
-                // MARK: Delete (edit mode only)
-                if existingTask != nil {
-                    Section {
-                        Button(role: .destructive) {
-                            deleteTask()
-                        } label: {
-                            Label("Delete Task", systemImage: "trash")
-                                .foregroundStyle(.red)
-                        }
+                        Text("Ends at")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(endTime, style: .time)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
-            .navigationTitle(existingTask == nil ? "New Task" : "Edit Task")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+
+            // MARK: Inbox / Schedule Toggle
+            Section {
+                Toggle(isOn: $isInbox) {
+                    Label(
+                        isInbox ? "In Inbox (unscheduled)" : "Scheduled on Timeline",
+                        systemImage: isInbox ? "tray.full" : "calendar.day.timeline.left"
+                    )
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { saveTask() }
-                        .disabled(!canSave)
-                        .fontWeight(.semibold)
+                .tint(.accentColor)
+            }
+
+            // MARK: Recurrence
+            if !isInbox {
+                Section("Repeat") {
+                    RecurrencePickerRow(recurrenceRule: $recurrenceRule)
                 }
+            }
+
+            // MARK: Category & Color
+            Section("Appearance") {
+                Picker("Category", selection: $selectedCategory) {
+                    Text("None").tag(Optional<TaskCategory>.none)
+                    ForEach(categories) { category in
+                        Label(category.name, systemImage: category.symbolName)
+                            .tag(Optional(category))
+                    }
+                }
+
+                ColorSwatchRow(selectedColor: $selectedColor)
+            }
+
+            // MARK: Notifications  (not relevant for inbox tasks)
+            if !isInbox {
+                Section("Notifications") {
+                    Toggle("Remind me at start", isOn: $notificationsEnabled)
+                }
+            }
+
+            // MARK: Notes
+            Section("Notes") {
+                TextEditor(text: $notes)
+                    .frame(minHeight: 80)
+            }
+
+            // MARK: Delete (edit mode only)
+            if existingTask != nil {
+                Section {
+                    Button(role: .destructive) {
+                        deleteTask()
+                    } label: {
+                        Label("Delete Task", systemImage: "trash")
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+        }
+        .navigationTitle(existingTask == nil ? "New Event" : "Edit Event")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") { dismiss() }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Save") { saveTask() }
+                    .disabled(!canSave)
+                    .fontWeight(.semibold)
             }
         }
     }
@@ -237,6 +247,7 @@ struct TaskEditorView: View {
         }
 
         try? modelContext.save()
+        onSave?()
         dismiss()
     }
 

@@ -7,6 +7,52 @@
 import Foundation
 import SwiftData
 
+// MARK: - Subtask
+
+@Model
+final class Subtask {
+    var id: UUID
+    var title: String
+    var isCompleted: Bool
+    var createdDate: Date
+
+    init(
+        id: UUID = UUID(),
+        title: String,
+        isCompleted: Bool = false,
+        createdDate: Date = .now
+    ) {
+        self.id = id
+        self.title = title
+        self.isCompleted = isCompleted
+        self.createdDate = createdDate
+    }
+}
+
+// MARK: - Task Priority
+
+enum TaskPriority: String, Codable, CaseIterable {
+    case high = "High"
+    case medium = "Medium"
+    case low = "Low"
+
+    var symbolName: String {
+        switch self {
+        case .high: return "exclamationmark.3"
+        case .medium: return "minus"
+        case .low: return "checkmark"
+        }
+    }
+
+    var color: String {
+        switch self {
+        case .high: return "#FF6B6B"
+        case .medium: return "#FFA500"
+        case .low: return "#51CF66"
+        }
+    }
+}
+
 // @Model tells SwiftData to persist this class
 @Model
 final class PlannerTask {
@@ -49,6 +95,16 @@ final class PlannerTask {
     @Relationship(deleteRule: .nullify)
     var category: TaskCategory?
 
+    /// Task priority: High, Medium, Low
+    var priority: TaskPriority = TaskPriority.medium
+
+    /// Subtasks for this task
+    @Relationship(deleteRule: .cascade)
+    var subtasks: [Subtask] = []
+
+    /// Optional due date for tasks that aren't scheduled on the timeline
+    var dueDate: Date?
+
     // MARK: - Initializer
 
     init(
@@ -62,7 +118,10 @@ final class PlannerTask {
         isCompleted: Bool = false,
         isInbox: Bool = false,
         recurrenceRuleData: Data? = nil,
-        category: TaskCategory? = nil
+        category: TaskCategory? = nil,
+        priority: TaskPriority = TaskPriority.medium,
+        subtasks: [Subtask] = [],
+        dueDate: Date? = nil
     ) {
         self.id = id
         self.title = title
@@ -75,6 +134,9 @@ final class PlannerTask {
         self.isInbox = isInbox
         self.recurrenceRuleData = recurrenceRuleData
         self.category = category
+        self.priority = priority
+        self.subtasks = subtasks
+        self.dueDate = dueDate
     }
 
     // MARK: - Computed Properties

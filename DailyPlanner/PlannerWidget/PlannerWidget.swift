@@ -20,6 +20,8 @@ struct PlannerEntry: TimelineEntry {
     let date: Date
     let currentTask: WidgetTask?
     let upNextTask: WidgetTask?
+    let overdueReminders: [WidgetReminder]
+    let recentNotes: [WidgetNote]
 }
 
 /// A lightweight task struct for the widget (we cannot use SwiftData models directly in widgets)
@@ -30,6 +32,22 @@ struct WidgetTask {
     let colorHex: String
     let symbolName: String
     let categoryName: String?
+}
+
+/// A lightweight reminder struct for the widget
+struct WidgetReminder {
+    let title: String
+    let dueDate: Date
+    let isCompleted: Bool
+    let priority: String
+}
+
+/// A lightweight note struct for the widget
+struct WidgetNote {
+    let content: String
+    let labelName: String
+    let colorHex: String
+    let isPinned: Bool
 }
 
 // MARK: - Timeline Provider
@@ -49,7 +67,9 @@ struct PlannerTimelineProvider: TimelineProvider {
                 symbolName: "video.fill",
                 categoryName: "Work"
             ),
-            upNextTask: nil
+            upNextTask: nil,
+            overdueReminders: [],
+            recentNotes: []
         )
     }
 
@@ -114,7 +134,19 @@ struct PlannerTimelineProvider: TimelineProvider {
             $0.startTime > date && calendar.isDate($0.startTime, inSameDayAs: date)
         }
 
-        return PlannerEntry(date: date, currentTask: currentTask, upNextTask: upNextTask)
+        // Overdue reminders (for now, empty - fetched from shared store in real implementation)
+        let overdueReminders: [WidgetReminder] = []
+
+        // Recent notes (for now, empty - fetched from shared store in real implementation)
+        let recentNotes: [WidgetNote] = []
+
+        return PlannerEntry(
+            date: date,
+            currentTask: currentTask,
+            upNextTask: upNextTask,
+            overdueReminders: overdueReminders,
+            recentNotes: recentNotes
+        )
     }
 }
 

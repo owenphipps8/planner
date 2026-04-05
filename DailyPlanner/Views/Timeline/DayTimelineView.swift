@@ -19,25 +19,19 @@
 import SwiftUI
 import SwiftData
 
+enum TimelinePresentationStyle {
+    case classic
+    case iosCards
+}
+
 struct DayTimelineView: View {
 
     // MARK: - Configuration
 
-    /// Height of one hour on screen (in points). 64pt = 1 hour.
-    private let hourHeight: CGFloat = 64
-
-    /// First hour to display (0 = midnight)
-    private let startHour: Int = 0
-
-    /// Last hour to display (24 = end of day)
-    private let endHour: Int = 24
-
-    /// Width of the left column showing hour labels
-    private let rulerWidth: CGFloat = 56
-
     // MARK: - Inputs
 
     @Binding var selectedDate: Date
+    var style: TimelinePresentationStyle = .classic
 
     /// Called when the user taps an empty area of the timeline.
     /// The Date passed in is the approximate time they tapped.
@@ -48,28 +42,77 @@ struct DayTimelineView: View {
     /// Task currently being edited (shown as a sheet)
     @State private var editingTask: PlannerTask? = nil
 
+    private var hourHeight: CGFloat {
+        switch style {
+        case .classic:
+            return 64
+        case .iosCards:
+            return 48
+        }
+    }
+
+    private var startHour: Int { 8 }
+
+    private var endHour: Int {
+        switch style {
+        case .classic:
+            return 20
+        case .iosCards:
+            return 22
+        }
+    }
+
+    private var rulerWidth: CGFloat {
+        switch style {
+        case .classic:
+            return 56
+        case .iosCards:
+            return 0
+        }
+    }
+
+    private func safeTaskBlockWidth(from totalWidth: CGFloat) -> CGFloat {
+        let raw = totalWidth - rulerWidth - 8
+        return raw.isFinite ? max(raw, 0) : 0
+    }
+
     // MARK: - Data
 
-    /// All tasks for the selected day, sorted by start time.
-    /// @Query with a dynamic predicate must be rebuilt; we use a computed filter instead.
-    @Query(sort: \PlannerTask.startTime) private var allTasks: [PlannerTask]
+    @Query(sort: \PlannerTask.startTime)  private var allTasks:  [PlannerTask]
+    @Query(sort: \CalendarEvent.startTime) private var allEvents: [CalendarEvent]
 
     private var tasksForSelectedDay: [PlannerTask] {
-        let calendar = Calendar.current
-        return allTasks.filter {
-            !$0.isInbox && calendar.isDate($0.startTime, inSameDayAs: selectedDate)
-        }
+        let cal = Calendar.current
+        return allTasks.filter { cal.isDate($0.startTime, inSameDayAs: selectedDate) }
+    }
+
+    private var eventsForSelectedDay: [CalendarEvent] {
+        let cal = Calendar.current
+        return allEvents.filter { cal.isDate($0.startTime, inSameDayAs: selectedDate) }
     }
 
     // MARK: - Body
 
     var body: some View {
+        Group {
+            switch style {
+            case .classic:
+                classicTimeline
+            case .iosCards:
+                iosCardsTimeline
+            }
+        }
+        .sheet(item: $editingTask) { task in
+            TaskEditorView(existingTask: task)
+        }
+    }
+
+    private var classicTimeline: some View {
         GeometryReader { geometry in
             ScrollViewReader { proxy in
                 ScrollView(.vertical, showsIndicators: false) {
                     ZStack(alignment: .topLeading) {
 
-                        // Layer 1: Hour grid lines and labels (background)
                         TimelineRulerView(
                             startHour: startHour,
                             endHour: endHour,
@@ -78,13 +121,12 @@ struct DayTimelineView: View {
                             totalWidth: geometry.size.width
                         )
 
-                        // Layer 2: Task blocks (foreground)
                         ForEach(tasksForSelectedDay) { task in
                             TaskBlockView(task: task, hourHeight: hourHeight)
                                 .padding(.leading, rulerWidth + 4)
                                 .offset(y: yOffset(for: task))
                                 .frame(
-                                    width: geometry.size.width - rulerWidth - 8,
+                                    width: safeTaskBlockWidth(from: geometry.size.width),
                                     height: blockHeight(for: task)
                                 )
                                 .onTapGesture {
@@ -92,17 +134,15 @@ struct DayTimelineView: View {
                                 }
                         }
 
-                        // Layer 3: Current time indicator (only for today)
                         if Calendar.current.isDateInToday(selectedDate) {
                             CurrentTimeBar(
                                 rulerWidth: rulerWidth,
                                 totalWidth: geometry.size.width,
                                 yOffset: currentTimeYOffset()
                             )
-                            .id("currentTime") // used to scroll to this position
+                            .id("currentTime")
                         }
 
-                        // Layer 4: Invisible tap target over empty areas
                         Color.clear
                             .contentShape(Rectangle())
                             .onTapGesture { location in
@@ -114,7 +154,6 @@ struct DayTimelineView: View {
                     .frame(height: totalHeight)
                 }
                 .onAppear {
-                    // Scroll so the current time (or early morning) is visible
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         withAnimation {
                             proxy.scrollTo("currentTime", anchor: .center)
@@ -123,8 +162,31 @@ struct DayTimelineView: View {
                 }
             }
         }
-        .sheet(item: $editingTask) { task in
-            TaskEditorView(existingTask: task)
+    }
+
+    private var iosCardsTimeline: some View {
+        GeometryReader { geometry in
+            let visibleHours: CGFloat = 11
+            let cardSpacing: CGFloat = 10
+            let availableHeight = max(geometry.size.height - 8, 0)
+            let computedHeight = (availableHeight - (visibleHours - 1) * cardSpacing) / visibleHours
+            let rowHeight = min(max(computedHeight, 38), 56)
+
+            ScrollView(.vertical, showsIndicators: false) {
+                LazyVStack(spacing: cardSpacing) {
+                    ForEach(startHour..<endHour, id: \.self) { hour in
+                        IOSTimelineHourCard(
+                            hour: hour,
+                            items: timelineItems(for: hour),
+                            rowHeight: rowHeight,
+                            onTapHour: { onTapEmptySlot(hourDate(for: hour)) }
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 6)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
     }
 
@@ -160,7 +222,25 @@ struct DayTimelineView: View {
         let secondsIntoDay = now.timeIntervalSince(startOfDay)
         let hoursIntoDay = secondsIntoDay / 3600
         let offsetHours = hoursIntoDay - Double(startHour)
-        return CGFloat(offsetHours) * hourHeight
+        let raw = CGFloat(offsetHours) * hourHeight
+        return min(max(raw, 0), totalHeight)
+    }
+
+    private func timelineItems(for hour: Int) -> [TimelineItem] {
+        let cal = Calendar.current
+        let tasks = tasksForSelectedDay
+            .filter { cal.component(.hour, from: $0.startTime) == hour }
+            .map { TimelineItem(id: $0.id, title: $0.title, accentHex: $0.category?.colorHex ?? $0.colorHex, isEvent: false) }
+        let events = eventsForSelectedDay
+            .filter { cal.component(.hour, from: $0.startTime) == hour }
+            .map { TimelineItem(id: $0.id, title: $0.title, accentHex: $0.accentHex, isEvent: true) }
+        return (tasks + events).sorted { $0.title < $1.title }
+    }
+
+    private func hourDate(for hour: Int) -> Date {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: selectedDate)
+        return calendar.date(bySettingHour: hour, minute: 0, second: 0, of: startOfDay) ?? startOfDay
     }
 
     /// Converts a Y coordinate (from a tap gesture) back into a Date
@@ -175,6 +255,97 @@ struct DayTimelineView: View {
     }
 }
 
+// MARK: - Shared timeline item (task or calendar event)
+
+struct TimelineItem: Identifiable {
+    let id: UUID
+    let title: String
+    let accentHex: String
+    let isEvent: Bool   // true = calendar event, false = task
+}
+
+private struct IOSTimelineHourCard: View {
+    let hour: Int
+    let items: [TimelineItem]
+    let rowHeight: CGFloat
+    let onTapHour: () -> Void
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white.opacity(0.78))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(Color.white.opacity(0.82), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.04), radius: 12, y: 5)
+
+            HStack(spacing: 12) {
+                timePill
+
+                if items.isEmpty {
+                    Spacer(minLength: 0)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(items) { item in
+                                HStack(spacing: 6) {
+                                    Image(systemName: item.isEvent ? "calendar" : "checkmark.circle.fill")
+                                        .font(.system(size: 9, weight: .semibold))
+                                        .foregroundStyle(Color(hex: item.accentHex))
+
+                                    Text(item.title)
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .lineLimit(1)
+                                        .foregroundStyle(Color(hex: "#274A78"))
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(
+                                    Capsule(style: .continuous)
+                                        .fill(Color(hex: item.accentHex).opacity(0.10))
+                                )
+                            }
+                        }
+                        .padding(.trailing, 6)
+                    }
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, max((rowHeight - 34) / 2.2, 5))
+        }
+        .frame(height: rowHeight)
+        .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .onTapGesture(perform: onTapHour)
+    }
+
+    private var timePill: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Text(hourNumberLabel)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color(hex: "#5A6783"))
+
+            Text(periodLabel)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Color(hex: "#7B88A2"))
+        }
+        .frame(width: 62, alignment: .leading)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(
+            Capsule(style: .continuous)
+                .fill(Color(hex: "#EEF3FF"))
+        )
+    }
+
+    private var hourNumberLabel: String {
+        let h = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour)
+        return "\(h)"
+    }
+
+    private var periodLabel: String { hour >= 12 ? "PM" : "AM" }
+}
+
 // MARK: - Preview
 
 #Preview {
@@ -182,5 +353,5 @@ struct DayTimelineView: View {
         selectedDate: .constant(.now),
         onTapEmptySlot: { _ in }
     )
-    .modelContainer(for: [PlannerTask.self, TaskCategory.self], inMemory: true)
+    .modelContainer(for: [PlannerTask.self, TaskCategory.self, CalendarEvent.self], inMemory: true)
 }
