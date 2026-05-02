@@ -14,7 +14,7 @@ struct RecurrencePickerView: View {
     @State private var selectedOption: RecurrenceOption = .never
 
     /// Which days are checked when "weekly" is selected
-    @State private var selectedWeekdays: Set<Weekday> = []
+    @State private var selectedWeekdays: Set<DayOfWeek> = []
 
     // Options shown in the picker list
     enum RecurrenceOption: String, CaseIterable, Identifiable {
@@ -45,23 +45,8 @@ struct RecurrencePickerView: View {
                 if selectedOption == .weekly {
                     Section("On these days") {
                         HStack(spacing: 8) {
-                            ForEach(Weekday.allCases) { day in
-                                let isSelected = selectedWeekdays.contains(day)
-                                Text(day.shortName)
-                                    .font(.caption)
-                                    .fontWeight(isSelected ? .bold : .regular)
-                                    .frame(width: 36, height: 36)
-                                    .background(
-                                        Circle().fill(isSelected ? Color.accentColor : Color(.systemGray5))
-                                    )
-                                    .foregroundStyle(isSelected ? .white : .primary)
-                                    .onTapGesture {
-                                        if isSelected {
-                                            selectedWeekdays.remove(day)
-                                        } else {
-                                            selectedWeekdays.insert(day)
-                                        }
-                                    }
+                            ForEach(DayOfWeek.allCases, id: \.id) { day in
+                                dayButton(day)
                             }
                         }
                         .padding(.vertical, 4)
@@ -69,7 +54,9 @@ struct RecurrencePickerView: View {
                 }
             }
             .navigationTitle("Repeat")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -85,6 +72,26 @@ struct RecurrencePickerView: View {
         }
         .onAppear { loadCurrentRule() }
         .presentationDetents([.medium])
+    }
+
+    // MARK: - Day Button
+
+    @ViewBuilder
+    private func dayButton(_ day: DayOfWeek) -> some View {
+        let isSelected = selectedWeekdays.contains(day)
+        Text(day.shortName)
+            .font(.caption)
+            .fontWeight(isSelected ? .bold : .regular)
+            .frame(width: 36, height: 36)
+            .background(Circle().fill(isSelected ? Color.accentColor : Color.secondary.opacity(0.2)))
+            .foregroundStyle(isSelected ? .white : .primary)
+            .onTapGesture {
+                if isSelected {
+                    selectedWeekdays.remove(day)
+                } else {
+                    selectedWeekdays.insert(day)
+                }
+            }
     }
 
     // MARK: - Load / Apply

@@ -6,7 +6,7 @@
 import Foundation
 
 /// The days of the week, matching Swift's Calendar weekday numbering (1 = Sunday)
-enum Weekday: Int, Codable, CaseIterable, Identifiable {
+enum DayOfWeek: Int, Codable, CaseIterable, Identifiable {
     case sunday = 1, monday, tuesday, wednesday, thursday, friday, saturday
 
     var id: Int { rawValue }
@@ -43,7 +43,7 @@ enum RecurrenceRule: Codable, Equatable {
     case daily
 
     /// Repeats on specific days of the week (e.g. Mon, Wed, Fri)
-    case weekly(days: [Weekday])
+    case weekly(days: [DayOfWeek])
 
     /// Repeats on the same day every month
     case monthly

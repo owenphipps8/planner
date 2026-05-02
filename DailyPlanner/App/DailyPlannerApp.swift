@@ -14,6 +14,7 @@ struct DailyPlannerApp: App {
 
     /// Central business-logic layer, available to all views via @Environment(PlannerViewModel.self)
     @State private var viewModel = PlannerViewModel()
+    @State private var theme = AppTheme.shared
 
     // MARK: - SwiftData Container
 
@@ -23,15 +24,15 @@ struct DailyPlannerApp: App {
             PlannerTask.self,
             TaskCategory.self,
             CalendarEvent.self,
+            CalendarSubtask.self,
             PlannerNote.self,
             NoteLabel.self,
         ])
 
         let modelConfiguration = ModelConfiguration(
             schema: schema,
-            isStoredInMemoryOnly: false
-            // Uncomment below + add your CloudKit container ID to enable iCloud sync:
-            // cloudKitDatabase: .automatic
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .automatic
         )
 
         do {
@@ -49,6 +50,8 @@ struct DailyPlannerApp: App {
         WindowGroup {
             ContentView()
                 .environment(viewModel)
+                .environment(theme)
+                .colorScheme(theme.isDarkMode ? .dark : .light)
                 .task {
                     // Request notification permission once, shortly after launch
                     await NotificationManager.shared.requestPermission()

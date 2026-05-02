@@ -28,5 +28,9 @@
 	<dict/>
 	<key>UIRequiresFullScreen</key>
 	<true/>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Plotted uses your calendar to import events into your daily planner.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>Plotted uses your calendar to import events into your daily planner.</string>
 </dict>
 </plist>

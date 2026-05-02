@@ -23,6 +23,7 @@ struct MonthCalendarView: View {
 
     private let cal = Calendar.current
     private let weekLetters = ["S","M","T","W","T","F","S"]
+    private let theme = AppTheme.shared
 
     // Tall cells when no day selected, compact when summary is showing
     private var cellHeight: CGFloat { selectedDay == nil ? 96 : 52 }
@@ -144,7 +145,7 @@ struct MonthCalendarView: View {
             VStack(spacing: 2) {
                 Text(currentMonth.formatted(.dateTime.month(.wide)))
                     .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(Color(hex: "#1C2B3A"))
+                    .foregroundStyle(theme.isDarkMode ? Color.white : Color(hex: "#1C2B3A"))
 
                 Button {
                     showYearPicker = true
@@ -152,10 +153,10 @@ struct MonthCalendarView: View {
                     HStack(spacing: 3) {
                         Text(String(currentYear))
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(Color(hex: "#5D6785"))
+                            .foregroundStyle(theme.isDarkMode ? Color.white.opacity(0.7) : Color(hex: "#5D6785"))
                         Image(systemName: "chevron.down")
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(Color(hex: "#5D6785"))
+                            .foregroundStyle(theme.isDarkMode ? Color.white.opacity(0.7) : Color(hex: "#5D6785"))
                     }
                 }
                 .buttonStyle(.plain)
@@ -194,13 +195,8 @@ struct MonthCalendarView: View {
                     .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(width: 42, height: 42)
-                    .background(
-                        Circle().fill(LinearGradient(
-                            colors: [Color(hex: "#6D66FF"), Color(hex: "#32B4FF")],
-                            startPoint: .topLeading, endPoint: .bottomTrailing
-                        ))
-                    )
-                    .shadow(color: Color(hex: "#6784D6").opacity(0.35), radius: 10, y: 5)
+                    .background(Circle().fill(theme.buttonGradient))
+                    .shadow(color: theme.buttonShadowColor, radius: 10, y: 5)
             }
             .buttonStyle(.plain)
         }
@@ -213,7 +209,7 @@ struct MonthCalendarView: View {
             ForEach(weekLetters, id: \.self) { d in
                 Text(d)
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color(hex: "#8A93AA"))
+                    .foregroundStyle(theme.isDarkMode ? Color.white.opacity(0.5) : Color(hex: "#8A93AA"))
                     .frame(maxWidth: .infinity)
             }
         }
@@ -244,29 +240,33 @@ struct MonthCalendarView: View {
                                     let dayNum     = cal.component(.day, from: date)
                                     let evts       = events(for: date)
                                     let tsks       = tasks(for: date)
+                                    let holiday    = HolidayProvider.holiday(for: date)
 
-                                    VStack(spacing: isExpanded ? 6 : 3) {
+                                    VStack(spacing: isExpanded ? 4 : 2) {
                                         Text("\(dayNum)")
                                             .font(.system(size: fontSize, weight: isToday || isSelected ? .bold : .medium))
                                             .foregroundStyle(
                                                 isSelected ? .white :
-                                                isToday    ? Color(hex: "#3A7BD5") :
+                                                isToday    ? theme.primaryColor :
+                                                theme.isDarkMode ? Color.white.opacity(0.85) :
                                                              Color(hex: "#1C2B3A")
                                             )
                                             .frame(width: circleSize, height: circleSize)
                                             .background {
                                                 if isSelected {
-                                                    Circle().fill(
-                                                        LinearGradient(
-                                                            colors: [Color(hex: "#6D66FF"), Color(hex: "#32B4FF")],
-                                                            startPoint: .topLeading, endPoint: .bottomTrailing
-                                                        )
-                                                    )
-                                                    .shadow(color: Color(hex: "#6784D6").opacity(0.4), radius: 6, y: 3)
+                                                    Circle().fill(theme.buttonGradient)
+                                                        .shadow(color: theme.buttonShadowColor, radius: 6, y: 3)
                                                 } else if isToday {
-                                                    Circle().fill(Color(hex: "#3A7BD5").opacity(0.14))
+                                                    Circle().fill(theme.primaryColor.opacity(0.14))
                                                 }
                                             }
+
+                                        // Holiday icon
+                                        if isExpanded, let h = holiday {
+                                            Image(systemName: h.symbol)
+                                                .font(.system(size: 9, weight: .semibold))
+                                                .foregroundStyle(isSelected ? .white : h.color)
+                                        }
 
                                         HStack(spacing: 3) {
                                             ForEach(evts.prefix(3), id: \.id) { ev in
@@ -282,8 +282,8 @@ struct MonthCalendarView: View {
                                     }
                                     .frame(width: colW, height: cellHeight)
                                     .background(
-                                        isSelected ? Color(hex: "#6D66FF").opacity(0.06) :
-                                        isToday    ? Color(hex: "#3A7BD5").opacity(0.06) :
+                                        isSelected ? theme.primaryColor.opacity(0.06) :
+                                        isToday    ? theme.primaryColor.opacity(0.06) :
                                                      Color.clear
                                     )
                                     .contentShape(Rectangle())
@@ -359,8 +359,10 @@ private struct DailyInlineSummary: View {
     @Binding var editingEvent: CalendarEvent?
 
     @Environment(\.modelContext) private var modelContext
+    private let theme = AppTheme.shared
 
-    private var hasItems: Bool { !events.isEmpty || !tasks.isEmpty }
+    private var holiday: Holiday? { HolidayProvider.holiday(for: date) }
+    private var hasItems: Bool { !events.isEmpty || !tasks.isEmpty || holiday != nil }
 
     private var dayNum: String { "\(Calendar.current.component(.day, from: date))" }
     private var dayName: String { date.formatted(.dateTime.weekday(.wide)) }
@@ -380,12 +382,9 @@ private struct DailyInlineSummary: View {
                 // Numbered circle
                 ZStack {
                     Circle()
-                        .fill(LinearGradient(
-                            colors: [Color(hex: "#6D66FF"), Color(hex: "#32B4FF")],
-                            startPoint: .topLeading, endPoint: .bottomTrailing
-                        ))
+                        .fill(theme.buttonGradient)
                         .frame(width: 48, height: 48)
-                        .shadow(color: Color(hex: "#6784D6").opacity(0.35), radius: 10, y: 5)
+                        .shadow(color: theme.buttonShadowColor, radius: 10, y: 5)
                     Text(dayNum)
                         .font(.system(size: 20, weight: .bold))
                         .foregroundStyle(.white)
@@ -403,13 +402,8 @@ private struct DailyInlineSummary: View {
                         .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(width: 36, height: 36)
-                        .background(
-                            Circle().fill(LinearGradient(
-                                colors: [Color(hex: "#6D66FF"), Color(hex: "#32B4FF")],
-                                startPoint: .topLeading, endPoint: .bottomTrailing
-                            ))
-                        )
-                        .shadow(color: Color(hex: "#6784D6").opacity(0.35), radius: 8, y: 4)
+                        .background(Circle().fill(theme.buttonGradient))
+                        .shadow(color: theme.buttonShadowColor, radius: 8, y: 4)
                 }
                 .buttonStyle(.plain)
             }
@@ -439,6 +433,11 @@ private struct DailyInlineSummary: View {
                         .padding(.leading, 23)
 
                     VStack(alignment: .leading, spacing: 0) {
+                        // Holiday row at the top if applicable
+                        if let h = holiday {
+                            HolidayRow(holiday: h)
+                        }
+
                         ForEach(Array(sortedItems.enumerated()), id: \.offset) { _, item in
                             if item.isEvent, let eid = item.eventId,
                                let event = events.first(where: { $0.id == eid }) {
@@ -464,6 +463,41 @@ private struct DailyInlineSummary: View {
                 )
                 .shadow(color: Color.black.opacity(0.08), radius: 16, y: 6)
         )
+    }
+}
+
+// MARK: - Holiday Row
+
+private struct HolidayRow: View {
+    let holiday: Holiday
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(holiday.color.opacity(0.15))
+                    .frame(width: 32, height: 32)
+                Image(systemName: holiday.symbol)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(holiday.color)
+            }
+            .padding(.leading, 5)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(holiday.name)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(holiday.color)
+                Text("Public Holiday")
+                    .font(.caption)
+                    .foregroundStyle(Color(hex: "#9AA0B0"))
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 10)
+        .overlay(alignment: .bottom) {
+            Divider().opacity(0.4)
+        }
     }
 }
 
@@ -516,40 +550,160 @@ private struct SummaryTaskRow: View {
 // MARK: - Summary Event Row
 
 private struct SummaryEventRow: View {
+    @Environment(\.modelContext) private var modelContext
     let event: CalendarEvent
 
     private var color: Color { Color(hex: event.accentHex) }
+    private var sortedSubtasks: [CalendarSubtask] {
+        event.subtasks.sorted { $0.order < $1.order }
+    }
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Colored dot
-            Circle()
-                .fill(color)
-                .frame(width: 10, height: 10)
-                .padding(.leading, 5)
+        VStack(alignment: .leading, spacing: 0) {
+            // Event title row
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 10, height: 10)
+                    .padding(.leading, 5)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(event.title)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color(hex: "#1C2B3A"))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(event.title)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color(hex: "#1C2B3A"))
 
-                Text("\(event.startTime.formatted(date: .omitted, time: .shortened)) - \(event.endTime.formatted(date: .omitted, time: .shortened))")
-                    .font(.caption)
-                    .foregroundStyle(Color(hex: "#9AA0B0"))
+                    Text("\(event.startTime.formatted(date: .omitted, time: .shortened)) - \(event.endTime.formatted(date: .omitted, time: .shortened))")
+                        .font(.caption)
+                        .foregroundStyle(Color(hex: "#9AA0B0"))
+                }
+
+                Spacer(minLength: 0)
+
+                if let cat = event.category {
+                    Image(systemName: cat.symbolName)
+                        .font(.system(size: 13))
+                        .foregroundStyle(color)
+                }
             }
+            .padding(.vertical, 10)
 
-            Spacer(minLength: 0)
+            // Subtasks (if any)
+            if !sortedSubtasks.isEmpty {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(sortedSubtasks) { sub in
+                        HStack(spacing: 10) {
+                            Button {
+                                withAnimation {
+                                    sub.isCompleted.toggle()
+                                    try? modelContext.save()
+                                }
+                            } label: {
+                                Image(systemName: sub.isCompleted ? "checkmark.square.fill" : "square")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(sub.isCompleted ? color : Color(hex: "#BBBDC6"))
+                            }
+                            .buttonStyle(.plain)
 
-            if let cat = event.category {
-                Image(systemName: cat.symbolName)
-                    .font(.system(size: 13))
-                    .foregroundStyle(color)
+                            Text(sub.title)
+                                .font(.system(size: 13))
+                                .strikethrough(sub.isCompleted)
+                                .foregroundStyle(sub.isCompleted ? Color(hex: "#ABAFC0") : Color(hex: "#3A4560"))
+
+                            Spacer(minLength: 0)
+                        }
+                        .padding(.leading, 29)
+                        .padding(.vertical, 5)
+                    }
+                }
+                .padding(.bottom, 6)
             }
         }
-        .padding(.vertical, 10)
         .overlay(alignment: .bottom) {
             Divider().opacity(0.4)
         }
+    }
+}
+
+// MARK: - Holiday Provider
+
+struct Holiday {
+    let name: String
+    let symbol: String   // SF Symbol name
+    let color: Color
+}
+
+struct HolidayProvider {
+    private static let cal = Calendar(identifier: .gregorian)
+
+    /// Returns the holiday for `date`, or nil if there isn't one.
+    static func holiday(for date: Date) -> Holiday? {
+        let comps = cal.dateComponents([.year, .month, .day, .weekday, .weekdayOrdinal], from: date)
+        guard let y = comps.year, let m = comps.month, let d = comps.day else { return nil }
+
+        switch (m, d) {
+        case (1, 1):  return Holiday(name: "New Year's Day",    symbol: "sparkles",          color: .purple)
+        case (6, 19): return Holiday(name: "Juneteenth",        symbol: "star.fill",          color: Color(hex: "#E58E1D"))
+        case (7, 4):  return Holiday(name: "Independence Day",  symbol: "flag.fill",          color: .red)
+        case (11, 11):return Holiday(name: "Veterans Day",      symbol: "medal.fill",         color: Color(hex: "#5E8FFF"))
+        case (12, 25):return Holiday(name: "Christmas Day",     symbol: "gift.fill",          color: .red)
+        case (12, 26):return Holiday(name: "Kwanzaa Begins",    symbol: "flame.fill",         color: Color(hex: "#E58E1D"))
+        case (12, 31):return Holiday(name: "New Year's Eve",    symbol: "party.popper.fill",  color: .purple)
+        default: break
+        }
+
+        // Floating holidays — need weekday math
+        let wd  = comps.weekday ?? 0           // 1=Sun … 7=Sat
+        let ord = comps.weekdayOrdinal ?? 0    // 1st, 2nd, … occurrence in month
+
+        switch m {
+        case 1 where wd == 2 && ord == 3:     // 3rd Monday Jan → MLK Day
+            return Holiday(name: "MLK Day", symbol: "person.fill", color: Color(hex: "#51CF66"))
+        case 2 where wd == 2 && ord == 3:     // 3rd Monday Feb → Presidents Day
+            return Holiday(name: "Presidents' Day", symbol: "building.columns.fill", color: Color(hex: "#5E8FFF"))
+        case 5 where wd == 2:                 // Last Monday May → Memorial Day
+            // Check if it is the last Monday
+            if isLastWeekdayOfMonth(date: date, weekday: 2) {
+                return Holiday(name: "Memorial Day", symbol: "star.and.crescent.fill", color: Color(hex: "#5E8FFF"))
+            }
+        case 9 where wd == 2 && ord == 1:     // 1st Monday Sep → Labor Day
+            return Holiday(name: "Labor Day", symbol: "wrench.and.screwdriver.fill", color: Color(hex: "#51CF66"))
+        case 10 where wd == 2 && ord == 2:    // 2nd Monday Oct → Columbus Day
+            return Holiday(name: "Columbus Day", symbol: "globe.americas.fill", color: Color(hex: "#5E8FFF"))
+        case 11 where wd == 5 && ord == 4:    // 4th Thursday Nov → Thanksgiving
+            return Holiday(name: "Thanksgiving", symbol: "leaf.fill", color: Color(hex: "#E58E1D"))
+        default: break
+        }
+
+        // Easter (Gregorian algorithm)
+        if let easter = easterDate(year: y), cal.isDate(easter, inSameDayAs: date) {
+            return Holiday(name: "Easter", symbol: "circle.fill", color: Color(hex: "#FF8CC9"))
+        }
+
+        return nil
+    }
+
+    private static func isLastWeekdayOfMonth(date: Date, weekday: Int) -> Bool {
+        let nextWeek = cal.date(byAdding: .day, value: 7, to: date)!
+        return cal.component(.month, from: nextWeek) != cal.component(.month, from: date)
+    }
+
+    private static func easterDate(year: Int) -> Date? {
+        // Anonymous Gregorian algorithm
+        let a = year % 19
+        let b = year / 100
+        let c = year % 100
+        let d = b / 4
+        let e = b % 4
+        let f = (b + 8) / 25
+        let g = (b - f + 1) / 3
+        let h = (19 * a + b - d - g + 15) % 30
+        let i = c / 4
+        let k = c % 4
+        let l = (32 + 2 * e + 2 * i - h - k) % 7
+        let m = (a + 11 * h + 22 * l) / 451
+        let month = (h + l - 7 * m + 114) / 31
+        let day   = ((h + l - 7 * m + 114) % 31) + 1
+        return cal.date(from: DateComponents(year: year, month: month, day: day))
     }
 }
 

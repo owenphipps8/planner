@@ -11,6 +11,7 @@ struct RemindersView: View {
     // MARK: - Environment
 
     @Environment(\.modelContext) private var modelContext
+    private let theme = AppTheme.shared
 
     // MARK: - State
 
@@ -95,18 +96,9 @@ struct RemindersView: View {
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Color.white)
                     .frame(width: 52, height: 52)
-                    .background(
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color(hex: "#6D66FF"), Color(hex: "#32B4FF")],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    )
+                    .background(Circle().fill(theme.buttonGradient))
                     .overlay(Circle().stroke(Color.white.opacity(0.9), lineWidth: 2))
-                    .shadow(color: Color(hex: "#6784D6").opacity(0.38), radius: 14, y: 8)
+                    .shadow(color: theme.buttonShadowColor, radius: 14, y: 8)
             }
             .buttonStyle(.plain)
         }
@@ -137,13 +129,7 @@ struct RemindersView: View {
             .foregroundStyle(Color.white)
             .padding(.horizontal, 24)
             .padding(.vertical, 10)
-            .background(
-                Capsule()
-                    .fill(LinearGradient(
-                        colors: [Color(hex: "#6D66FF"), Color(hex: "#32B4FF")],
-                        startPoint: .leading, endPoint: .trailing
-                    ))
-            )
+            .background(Capsule().fill(theme.buttonGradientH))
             .buttonStyle(.plain)
             Spacer()
         }
@@ -334,7 +320,13 @@ struct ReminderEditorView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .colorScheme(AppTheme.shared.colorScheme)
+            .background(TodayScreenBackground())
             .navigationTitle(existingReminder == nil ? "New Reminder" : "Edit Reminder")
+            #if os(iOS)
+            .toolbarBackground(.hidden, for: .navigationBar)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismissEditor() }

@@ -50,34 +50,37 @@ private struct HourRow: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
 
-            // Horizontal grid line spanning the full width
+            // Horizontal grid line from the ruler edge to full width
             Rectangle()
-                .fill(Color.gray.opacity(0.3))
+                .fill(Color.gray.opacity(0.25))
                 .frame(width: safeTotalWidth, height: 0.5)
-                .offset(y: 0)
 
-            // Half-hour divider line (lighter, shorter)
+            // Half-hour divider (lighter, starts after ruler)
             Rectangle()
-                .fill(Color.gray.opacity(0.15))
+                .fill(Color.gray.opacity(0.12))
                 .frame(width: safeGridWidth, height: 0.5)
                 .offset(x: rulerWidth, y: hourHeight / 2)
 
-            // Hour label on the left
+            // Label: fully above the line, right-aligned in the ruler column.
+            // Use a single compact line so we know the exact height (~13pt),
+            // then offset up by that height so the baseline sits on the line.
             Text(hourLabel(for: hour))
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .font(.system(size: 10, weight: .regular, design: .rounded))
+                .foregroundStyle(Color.secondary.opacity(0.75))
                 .frame(width: safeLabelWidth, alignment: .trailing)
-                .offset(y: -8) // nudge up so the label aligns with the line
+                .offset(y: -13)
         }
         .frame(height: hourHeight)
     }
 
-    /// Format: "12 AM", "1 PM", "12 PM", etc.
+    /// "12 AM", "1 PM", etc. — single line compact format
     private func hourLabel(for hour: Int) -> String {
-        if hour == 0  { return "12\nAM" }
-        if hour == 12 { return "12\nPM" }
-        if hour < 12  { return "\(hour)\nAM" }
-        return "\(hour - 12)\nPM"
+        let num: String
+        if hour == 0 || hour == 12 { num = "12" }
+        else if hour < 12           { num = "\(hour)" }
+        else                        { num = "\(hour - 12)" }
+        let period = hour < 12 ? "AM" : "PM"
+        return "\(num) \(period)"
     }
 }
 

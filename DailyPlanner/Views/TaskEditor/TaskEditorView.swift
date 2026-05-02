@@ -79,7 +79,13 @@ struct TaskEditorView: View {
 
     var body: some View {
         if embedInNavigationStack {
-            NavigationStack { formContent }
+            NavigationStack {
+                formContent
+                    .background(TodayScreenBackground())
+                    #if os(iOS)
+                    .toolbarBackground(.hidden, for: .navigationBar)
+                    #endif
+            }
         } else {
             formContent
         }
@@ -184,8 +190,12 @@ struct TaskEditorView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .colorScheme(AppTheme.shared.colorScheme)
         .navigationTitle(existingTask == nil ? "New Event" : "Edit Event")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") { dismiss() }
