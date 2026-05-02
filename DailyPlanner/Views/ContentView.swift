@@ -525,41 +525,129 @@ struct TodayScreenHeader: View {
     let onTapAdd: () -> Void
 
     var body: some View {
-        HStack(spacing: 14) {
-            TodayDateControl(selectedDate: $selectedDate)
-                .fixedSize(horizontal: true, vertical: false)
+        VStack(spacing: 10) {
+            HStack(spacing: 14) {
+                TodayDateControl(selectedDate: $selectedDate)
+                    .fixedSize(horizontal: true, vertical: false)
 
-            Text(selectedDate.formatted(.dateTime.weekday(.wide).month().day()))
-                .font(.system(size: 17, weight: .bold))
-                .foregroundStyle(Color(hex: "#26324A"))
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
-                .layoutPriority(1)
+                Text(selectedDate.formatted(.dateTime.weekday(.wide).month().day()))
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(Color(hex: "#26324A"))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+                    .layoutPriority(1)
 
-            Spacer(minLength: 0)
+                Spacer(minLength: 0)
 
-            Button(action: onTapAdd) {
-                Image(systemName: "plus")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(Color.white)
-                    .frame(width: 52, height: 52)
-                    .background(
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color(hex: "#6D66FF"), Color(hex: "#32B4FF")],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
+                Button(action: onTapAdd) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(Color.white)
+                        .frame(width: 52, height: 52)
+                        .background(
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color(hex: "#6D66FF"), Color(hex: "#32B4FF")],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
-                            )
-                    )
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.9), lineWidth: 2)
-                    )
-                    .shadow(color: Color(hex: "#6784D6").opacity(0.38), radius: 14, y: 8)
+                        )
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.9), lineWidth: 2)
+                        )
+                        .shadow(color: Color(hex: "#6784D6").opacity(0.38), radius: 14, y: 8)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
+
+            DayScrollStrip(selectedDate: $selectedDate)
+        }
+    }
+}
+
+// MARK: - Day Scroll Strip
+
+struct DayScrollStrip: View {
+    @Binding var selectedDate: Date
+
+    private let calendar = Calendar.current
+    private let dayLetters = ["S", "M", "T", "W", "T", "F", "S"]
+
+    private var daysInMonth: [Date] {
+        let comps = calendar.dateComponents([.year, .month], from: selectedDate)
+        guard let start = calendar.date(from: comps),
+              let range = calendar.range(of: .day, in: .month, for: selectedDate) else { return [] }
+        return range.compactMap { day in
+            calendar.date(bySetting: .day, value: day, of: start)
+        }
+    }
+
+    var body: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(daysInMonth, id: \.self) { day in
+                        let isSelected = calendar.isDate(day, inSameDayAs: selectedDate)
+                        let isToday    = calendar.isDateInToday(day)
+                        let dayNum     = calendar.component(.day, from: day)
+                        let weekday    = calendar.component(.weekday, from: day)
+
+                        VStack(spacing: 3) {
+                            Text(dayLetters[weekday - 1])
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundStyle(isSelected ? .white : Color(hex: "#5D6785"))
+
+                            Text("\(dayNum)")
+                                .font(.system(size: 15, weight: isSelected ? .bold : .medium))
+                                .foregroundStyle(
+                                    isSelected ? .white :
+                                    isToday    ? Color(hex: "#3A7BD5") :
+                                                 Color(hex: "#1C2B3A")
+                                )
+                        }
+                        .frame(width: 36, height: 52)
+                        .background {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(
+                                    isSelected ?
+                                        AnyShapeStyle(LinearGradient(
+                                            colors: [Color(hex: "#6D66FF"), Color(hex: "#32B4FF")],
+                                            startPoint: .top, endPoint: .bottom
+                                        )) :
+                                        AnyShapeStyle(isToday ?
+                                            Color(hex: "#3A7BD5").opacity(0.12) :
+                                            Color.white.opacity(0.78)
+                                        )
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.white.opacity(isSelected ? 0.3 : 0.9), lineWidth: 1)
+                                )
+                                .shadow(
+                                    color: isSelected ? Color(hex: "#6784D6").opacity(0.25) : Color.black.opacity(0.05),
+                                    radius: 5, y: 2
+                                )
+                        }
+                        .onTapGesture { selectedDate = day }
+                        .id(dayNum)
+                    }
+                }
+                .padding(.horizontal, 2)
+                .padding(.vertical, 2)
+            }
+            .onAppear {
+                let d = calendar.component(.day, from: selectedDate)
+                proxy.scrollTo(d, anchor: .center)
+            }
+            .onChange(of: selectedDate) { _, newVal in
+                let d = calendar.component(.day, from: newVal)
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    proxy.scrollTo(d, anchor: .center)
+                }
+            }
         }
     }
 }

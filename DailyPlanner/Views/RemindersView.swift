@@ -28,7 +28,7 @@ struct RemindersView: View {
     private var upcomingReminders: [PlannerTask] {
         reminders.filter { task in
             guard let dueDate = task.dueDate else { return false }
-            return dueDate >= Date()
+            return dueDate >= Date() && !task.isCompleted
         }
         .sorted { $0.dueDate ?? .now < $1.dueDate ?? .now }
     }
@@ -207,40 +207,33 @@ struct RemindersView: View {
 
     @ViewBuilder
     private func reminderRow(for reminder: PlannerTask, dimmed: Bool = false) -> some View {
-        ReminderRow(reminder: reminder)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(0.78))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.9), lineWidth: 1)
-                    )
-                    .shadow(color: Color.black.opacity(0.07), radius: 8, y: 3)
-            )
-            .opacity(dimmed ? 0.6 : 1)
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
-            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-            .contentShape(Rectangle())
-            .onTapGesture { activeEditor = .edit(reminder) }
-            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                if !reminder.isCompleted {
-                    Button {
-                        toggleComplete(reminder)
-                    } label: {
-                        Label("Done", systemImage: "checkmark")
-                    }
-                    .tint(.green)
-                }
-
-                Button(role: .destructive) {
-                    deleteReminder(reminder)
-                } label: {
-                    Label("Delete", systemImage: "trash")
-                }
+        ReminderRow(
+            reminder: reminder,
+            onToggle: { toggleComplete(reminder) },
+            onEdit: { activeEditor = .edit(reminder) }
+        )
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.78))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.white.opacity(0.9), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.07), radius: 8, y: 3)
+        )
+        .opacity(dimmed ? 0.6 : 1)
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                deleteReminder(reminder)
+            } label: {
+                Label("Delete", systemImage: "trash")
             }
+        }
     }
 
     // MARK: - Actions
@@ -412,20 +405,17 @@ struct ReminderEditorView: View {
 struct ReminderRow: View {
 
     let reminder: PlannerTask
+    let onToggle: () -> Void
+    let onEdit: () -> Void
 
     private var taskColor: Color { Color(hex: reminder.colorHex) }
 
     private var dueDateLabel: String {
         guard let dueDate = reminder.dueDate else { return "" }
         let calendar = Calendar.current
-
-        if calendar.isDateInToday(dueDate) {
-            return "Today"
-        } else if calendar.isDateInTomorrow(dueDate) {
-            return "Tomorrow"
-        } else {
-            return dueDate.formatted(.dateTime.month(.abbreviated).day())
-        }
+        if calendar.isDateInToday(dueDate) { return "Today" }
+        if calendar.isDateInTomorrow(dueDate) { return "Tomorrow" }
+        return dueDate.formatted(.dateTime.month(.abbreviated).day())
     }
 
     private var isOverdue: Bool {
@@ -435,42 +425,53 @@ struct ReminderRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: reminder.symbolName)
-                .font(.title3)
-                .foregroundStyle(taskColor)
-                .frame(width: 24, height: 24)
+            // Left side: icon + details — taps open editor
+            Button(action: onEdit) {
+                HStack(spacing: 12) {
+                    Image(systemName: reminder.symbolName)
+                        .font(.title3)
+                        .foregroundStyle(taskColor)
+                        .frame(width: 24, height: 24)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(reminder.title)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .strikethrough(reminder.isCompleted)
-                    .foregroundStyle(reminder.isCompleted ? Color(hex: "#5D6785") : Color(hex: "#1C2B3A"))
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(reminder.title)
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .strikethrough(reminder.isCompleted)
+                            .foregroundStyle(reminder.isCompleted ? Color(hex: "#5D6785") : Color(hex: "#1C2B3A"))
 
-                HStack(spacing: 8) {
-                    if isOverdue {
-                        Label("Overdue", systemImage: "exclamationmark.circle.fill")
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                    } else {
-                        Label(dueDateLabel, systemImage: "calendar")
-                            .font(.caption)
-                            .foregroundStyle(Color(hex: "#5D6785"))
-                    }
+                        HStack(spacing: 8) {
+                            if isOverdue {
+                                Label("Overdue", systemImage: "exclamationmark.circle.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                            } else {
+                                Label(dueDateLabel, systemImage: "calendar")
+                                    .font(.caption)
+                                    .foregroundStyle(Color(hex: "#5D6785"))
+                            }
 
-                    if reminder.priority == TaskPriority.high {
-                        Label("High", systemImage: reminder.priority.symbolName)
-                            .font(.caption)
-                            .foregroundStyle(.red)
+                            if reminder.priority == TaskPriority.high {
+                                Label("High", systemImage: reminder.priority.symbolName)
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                            }
+                        }
                     }
                 }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
 
             Spacer()
 
-            Image(systemName: reminder.isCompleted ? "checkmark.circle.fill" : "circle")
-                .font(.title3)
-                .foregroundStyle(reminder.isCompleted ? taskColor : Color(hex: "#5D6785").opacity(0.5))
+            // Circle — taps toggle complete
+            Button(action: onToggle) {
+                Image(systemName: reminder.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(reminder.isCompleted ? taskColor : Color(hex: "#5D6785").opacity(0.5))
+            }
+            .buttonStyle(.plain)
         }
     }
 }

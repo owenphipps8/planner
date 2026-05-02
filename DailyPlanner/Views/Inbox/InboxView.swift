@@ -171,7 +171,7 @@ struct InboxView: View {
 
     @ViewBuilder
     private func inboxRow(for task: PlannerTask) -> some View {
-        InboxTaskRow(task: task)
+        InboxTaskRow(task: task, onToggle: { toggleComplete(task) }, onEdit: { activeEditor = .edit(task) })
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(
@@ -186,8 +186,6 @@ struct InboxView: View {
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
             .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-            .contentShape(Rectangle())
-            .onTapGesture { activeEditor = .edit(task) }
             .swipeActions(edge: .leading, allowsFullSwipe: true) {
                 Button {
                     toggleComplete(task)
@@ -243,48 +241,60 @@ private enum InboxEditorSheet: Identifiable {
 struct InboxTaskRow: View {
 
     let task: PlannerTask
+    let onToggle: () -> Void
+    let onEdit: () -> Void
 
     private var taskColor: Color { Color(hex: task.colorHex) }
 
     var body: some View {
         HStack(spacing: 12) {
 
-            ZStack {
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(taskColor.opacity(0.15))
-                    .frame(width: 44, height: 44)
-                Image(systemName: task.symbolName)
-                    .font(.body)
-                    .foregroundStyle(taskColor)
-            }
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(task.title)
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .strikethrough(task.isCompleted)
-                    .foregroundStyle(task.isCompleted ? Color(hex: "#5D6785") : Color(hex: "#1C2B3A"))
-                    .lineLimit(2)
-
-                HStack(spacing: 6) {
-                    if let category = task.category {
-                        CategoryBadge(category: category, style: .pill)
+            // Tapping the badge/details area opens editor
+            Button(action: onEdit) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(taskColor.opacity(0.15))
+                            .frame(width: 44, height: 44)
+                        Image(systemName: task.symbolName)
+                            .font(.body)
+                            .foregroundStyle(taskColor)
                     }
 
-                    if !task.notes.isEmpty {
-                        Text(task.notes)
-                            .font(.caption)
-                            .foregroundStyle(Color(hex: "#5D6785"))
-                            .lineLimit(1)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(task.title)
+                            .font(.body)
+                            .fontWeight(.medium)
+                            .strikethrough(task.isCompleted)
+                            .foregroundStyle(task.isCompleted ? Color(hex: "#5D6785") : Color(hex: "#1C2B3A"))
+                            .lineLimit(2)
+
+                        HStack(spacing: 6) {
+                            if let category = task.category {
+                                CategoryBadge(category: category, style: .pill)
+                            }
+                            if !task.notes.isEmpty {
+                                Text(task.notes)
+                                    .font(.caption)
+                                    .foregroundStyle(Color(hex: "#5D6785"))
+                                    .lineLimit(1)
+                            }
+                        }
                     }
                 }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
 
             Spacer(minLength: 0)
 
-            Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                .font(.title3)
-                .foregroundStyle(task.isCompleted ? taskColor : Color(hex: "#5D6785").opacity(0.5))
+            // Tapping the circle toggles completion
+            Button(action: onToggle) {
+                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(task.isCompleted ? taskColor : Color(hex: "#5D6785").opacity(0.5))
+            }
+            .buttonStyle(.plain)
         }
     }
 }
